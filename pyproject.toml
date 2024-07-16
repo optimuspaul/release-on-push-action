@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "release-on-push-action"
+version = "0.1.0"
+description = "Github action for tagging a release."
+authors = ["Paul J DeCoursey <paul@decoursey.net>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "action"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+PyYAML = "^6.0"
+Jinja2 = "^3.1.2"
+semver = {git = "https://github.com/python-semver/python-semver.git", rev = "3.0.2"}
+click = "^8.1.7"
+gitpython = "^3.1.43"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

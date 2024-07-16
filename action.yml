@@ -1,0 +1,15 @@
+name: 'Tag release 🏷️'
+description: 'Adds a tag to the commit and pushes it to the repository, the tag is the release version'
+author: 'optimuspaul'
+inputs:
+  bump_style:
+    description: 'Tag style: minor|major|patch|prerelease|timestamp'
+    required: false
+    default: 'timestamp'
+outputs:
+  tag_name:
+    description: 'Tag of released version'
+runs:
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
