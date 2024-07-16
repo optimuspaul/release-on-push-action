@@ -28,14 +28,7 @@ def main(bump_style: ReleaseType):
     repo = Repo('.')
     current_tags = ""
     try:
-        current_tags = repo.git.describe(tags=True, abbrev=0)
-        print("-----------------------")
-        print(current_tags)
-        print("-----------------------")
-        current_tags = repo.git.describe(tags=True)
-        print("-----------------------")
-        print(current_tags)
-        print("-----------------------")
+        current_tags = repo.git.tag(points_at="head")
     except:
         pass
     if repo.bare:
@@ -60,7 +53,12 @@ def main(bump_style: ReleaseType):
             # look into the past to find the latest tag
             latest_version = "0.0.0"
             try:
-                print(repo.git.tag())
+                tag_list = repo.git.tag(list=True)
+                tag_list = tag_list.split("\n")
+                for tag in sorted(tag_list, reverse=True):
+                    if tag.startswith("v"):
+                        latest_version = tag[1:]
+                        break
             except:
                 pass
             current_version = Version.parse(latest_version)
