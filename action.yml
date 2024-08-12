@@ -10,6 +10,5 @@ outputs:
   tag_name:
     description: 'Tag of released version'
 runs:
-runs:
   using: 'docker'
   image: 'Dockerfile'
