@@ -96,17 +96,17 @@ def main(bump_style: ReleaseType):
                 if bump_style == ReleaseType.mono:
                     if vps.match(last_tag):
                         vers, last_rc = vps.match(last_tag).groups()
-                        next_version = int(vers)
+                        latest_version = int(vers)
                         print(f"found version: {vers} rc: {rc}")
                     elif vs.match(last_tag):
-                        vers = vs.match(last_tag).groups()[0]
+                        latest_version = int(vs.match(last_tag).groups()[0])
                         print(f"found version: {latest_version} rc: -")
-                        next_version = int(vers+1)
+                        latest_version = int(latest_version+1)
             except:
                 pass
-        tag = f"v{next_version}"
+        tag = f"v{latest_version}"
         if bump_style == ReleaseType.mono_prerelease:
-            tag = f"v{next_version}-rc{last_rc+1}"
+            tag = f"v{latest_version}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
     if bump_style in {ReleaseType.prerelease, ReleaseType.build, ReleaseType.major, ReleaseType.minor, ReleaseType.patch}:
         current_version = None
