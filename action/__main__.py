@@ -15,8 +15,10 @@ from github import Auth
 def list_gh_tags():
     tags = []
     token = os.getenv("GITHUB_TOKEN")
+    print(f"token: {token is not None}")
     repo = os.getenv("GITHUB_REPOSITORY")
-    if not token or not repo:
+    print(f"repo: {repo}")
+    if token is None or repo is None:
         die_with_intent("GITHUB_TOKEN and GITHUB_REPOSITORY must be set", 1)
     auth = Auth.Token(token)
     g = Github(auth=auth)
