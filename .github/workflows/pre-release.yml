@@ -1,0 +1,27 @@
+name: 'Release go module'
+on:
+  pull_request:
+jobs:
+  tag-release:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'write'
+      id-token: 'write'
+      pull-requests: 'write'
+    steps:
+      - name: 'Checkout HEAD'
+        uses: 'actions/checkout@v4'
+        with:
+          set-safe-directory: true
+      - name: get-tag
+        id: get-tag
+        uses: 'optimuspaul/release-on-push-action@main'
+        with:
+          bump_style: 'mono-prerelease'
+      - name: debug
+        run: echo "${{ steps.get-tag.outputs.TAG_NAME }}"
+      - name: tag-commit
+        uses: tvdias/github-tagger@v0.0.1
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          tag: "${{ steps.get-tag.outputs.TAG_NAME }}"
