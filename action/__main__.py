@@ -89,16 +89,16 @@ def main(bump_style: ReleaseType):
                     vps = re.compile(r"v(\d+)-rc(\d+)")
                     versions = dict()
                     for tag in tag_list:
-                        if vs.match(tag):
-                            vers = vs.match(tag).groups()[0]
-                            latest_version = max(latest_version, int(vers))
-                            if vers not in versions:
-                                versions[vers] = []
-                        elif vps.match(tag):
+                        if vps.match(tag):
                             vers, rc = vs.match(tag).groups()
                             latest_version = max(latest_version, int(vers))
                             if vers not in versions:
                                 versions[vers] = [int(rc)]
+                        elif vs.match(tag):
+                            vers = vs.match(tag).groups()[0]
+                            latest_version = max(latest_version, int(vers))
+                            if vers not in versions:
+                                versions[vers] = []
                     rc_list =  sorted(map(lambda x: int(x), versions[vers]), reverse=True)
                     print(rc_list)
                     if len(rc_list) > 0:
