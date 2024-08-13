@@ -2,3 +2,5 @@
 action/__pycache__/
 
 .env
+
+VERSION

@@ -105,7 +105,7 @@ def main(bump_style: ReleaseType):
         if bump_style == ReleaseType.mono_prerelease.value:
             tag = f"{tag}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
-    if bump_style in {ReleaseType.prerelease.name, ReleaseType.build.name, ReleaseType.najor.name, ReleaseType.minor.name, ReleaseType.patch.name}:
+    if bump_style in {ReleaseType.prerelease.name, ReleaseType.build.name, ReleaseType.major.name, ReleaseType.minor.name, ReleaseType.patch.name}:
         current_version = None
         if current_tags:
             for tag in current_tags.split("\n"):
@@ -142,7 +142,7 @@ def main(bump_style: ReleaseType):
 
 
 def write_version_to_file(version: str):
-    fname = os.getenv("GITHUB_OUTPUT")
+    fname = os.getenv("GITHUB_OUTPUT", "VERSION")
     with open(fname, "a") as f:
         f.write(version)
 
