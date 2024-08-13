@@ -1,6 +1,8 @@
 name: 'Release Action'
 on:
-  pull_request:
+  push:
+    branches:
+      - 'main'
 jobs:
   tag-release:
     runs-on: 'ubuntu-latest'
