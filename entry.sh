@@ -1,4 +1,4 @@
 #!/bin/bash
 
 git config --global --add safe.directory $GITHUB_WORKSPACE
-python -m action $INPUT_BUMP_STYLE
+echo "TAG_NAME=$(python -m action $INPUT_BUMP_STYLE)" >> "$GITHUB_OUTPUT"

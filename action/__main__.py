@@ -77,8 +77,8 @@ def main(bump_style: ReleaseType):
         tag = datetime.now().strftime("release-%Y-%m-%d_%H-%M-%S")
         
     print(tag)
-    repo.create_tag(tag)
-    repo.remotes.origin.push(tag)
+    # repo.create_tag(tag)
+    # repo.remotes.origin.push(tag)
 
 
 if __name__ == '__main__':
