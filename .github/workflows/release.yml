@@ -23,7 +23,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: tag-commit
-        uses: tvdias/github-tagger@v0.0.1
+        uses: tvdias/github-tagger@v0.0.2
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           tag: "${{ steps.get-tag.outputs.TAG_NAME }}"

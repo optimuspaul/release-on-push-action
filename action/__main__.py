@@ -26,6 +26,8 @@ def list_gh_tags():
         tags.append(tag.name)
         print(f"tag found: {tag.name}")
     g.close()
+    if len(tags) == 0:
+        print("no tags found")
     return tags
 
 
@@ -129,14 +131,16 @@ def main(bump_style: ReleaseType):
                     if tag.startswith("v"):
                         latest_version = tag[1:]
                         break
-            except:
+            except Exception as e:
+                print("an error")
+                print(e)
                 pass
             current_version = Version.parse(latest_version)
         new_version: Version = None
         if bump_style == ReleaseType.build:
             new_version = current_version.bump_build()
         else:
-            new_version = current_version.next_version(bump_style)
+            new_version = current_version.next_version(bump_style.name)
         tag = f"v{new_version}"
     # timestamp releases
     elif bump_style == ReleaseType.timestamp:
