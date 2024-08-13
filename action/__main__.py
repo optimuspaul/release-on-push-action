@@ -143,7 +143,7 @@ def main(bump_style: ReleaseType):
 
 def write_version_to_file(version: str):
     fname = os.getenv("GITHUB_OUTPUT")
-    with open(fname "a") as f:
+    with open(fname, "a") as f:
         f.write(version)
 
 if __name__ == '__main__':
