@@ -109,9 +109,11 @@ def main(bump_style: ReleaseType):
                     print(rc_list)
                     if len(rc_list) > 0:
                         last_rc = rc_list[0]
+                    else:
+                        latest_version += 1
             except:
                 pass
-        tag = f"v{latest_version+1}"
+        tag = f"v{latest_version}"
         if bump_style == ReleaseType.mono_prerelease:
             tag = f"v{latest_version}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
