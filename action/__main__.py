@@ -11,6 +11,8 @@ from git import Repo
 from github import Github
 from github import Auth
 
+from action.mono import MonoVersionTag
+
 
 def list_gh_tags():
     tags = []
@@ -31,15 +33,18 @@ def list_gh_tags():
     return tags
 
 def get_latest_tag():
-    token = os.getenv("GITHUB_TOKEN")
-    print(f"token: {token is not None}")
-    repo = os.getenv("GITHUB_REPOSITORY")
-    print(f"repo: {repo}")
-    if token is None or repo is None:
-        die_with_intent("GITHUB_TOKEN and GITHUB_REPOSITORY must be set", 1)
-    auth = Auth.Token(token)
-    g = Github(auth=auth)
-    g.get_repo(repo).get_latest_release().tag_name
+    tags = list_gh_tags()
+    if len(tags) == 0:
+        return MonoVersionTag("v0")
+    parsed_tags = []
+    for tag in tags:
+        parsed_tags.append(MonoVersionTag(tag))
+    sorted_tags = sorted(parsed_tags)
+    for tag in sorted_tags:
+        print(f"::>>  tag: {tag.tag} mono: {tag.mono} rc: {tag.release_candidate} is_rc: {tag.is_rc}")
+        print(f"      nxt: {tag.next_mono().tag}")
+        print(f"   nxtpre: {tag.next_rc().tag}")
+    return sorted_tags[-1]
 
 def die_with_intent(message: str, code: int):
     print(message)
@@ -89,24 +94,18 @@ def main(bump_style: ReleaseType):
                     current_version = Version.parse(tag[1:])
                     die_with_intent("version tag already set for this commit", 5)
         if not current_version:
+            tag = "v0-rc0"
             try:
                 last_tag = get_latest_tag()
-                vs = re.compile(r"v(\d+)")
-                vps = re.compile(r"v(\d+)-rc(\d+)")
                 if bump_style == ReleaseType.mono:
-                    if vps.match(last_tag):
-                        vers, last_rc = vps.match(last_tag).groups()
-                        latest_version = int(vers)
-                        print(f"found version: {vers} rc: {rc}")
-                    elif vs.match(last_tag):
-                        latest_version = int(vs.match(last_tag).groups()[0])
-                        print(f"found version: {latest_version} rc: -")
-                        latest_version = int(latest_version+1)
-            except:
+                    tag = last_tag.next_mono().tag
+                if bump_style == ReleaseType.mono_prerelease:
+                    tag = last_tag.next_rc().tag
+            except Exception as e:
+                print("an error")
+                import traceback
+                traceback.print_exc()
                 pass
-        tag = f"v{latest_version}"
-        if bump_style == ReleaseType.mono_prerelease:
-            tag = f"v{latest_version}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
     if bump_style in {ReleaseType.prerelease, ReleaseType.build, ReleaseType.major, ReleaseType.minor, ReleaseType.patch}:
         current_version = None
