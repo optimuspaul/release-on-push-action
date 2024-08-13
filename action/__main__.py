@@ -144,7 +144,9 @@ def main(bump_style: ReleaseType):
 def write_version_to_file(version: str):
     fname = os.getenv("GITHUB_OUTPUT", "VERSION")
     with open(fname, "a") as f:
+        f.write("TAG_NAME=")
         f.write(version)
+        f.flush()
 
 if __name__ == '__main__':
     main()
