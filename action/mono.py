@@ -44,7 +44,7 @@ class MonoVersionTag:
     def next_rc(self):
         if self.is_rc:
             return MonoVersionTag(f"v{self.mono}-rc{self.release_candidate+1}")
-        return MonoVersionTag(f"v{self.mono}-rc1")
+        return MonoVersionTag(f"v{self.mono+1}-rc1")
 
     def next_mono(self):
         if self.is_rc:
