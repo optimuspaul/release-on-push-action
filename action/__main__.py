@@ -22,6 +22,7 @@ def list_gh_tags():
     g = Github(auth=auth)
     for tag in g.get_repo(repo).get_tags():
         tags.append(tag.name)
+        print(f"tag found: {tag.name}")
     g.close()
     return tags
 
