@@ -18,10 +18,12 @@ jobs:
         uses: './'
         with:
           bump_style: 'mono_prerelease'
-      - name: debug
-        run: echo "${{ steps.get-tag.outputs.TAG_NAME }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: tag-commit
         uses: tvdias/github-tagger@v0.0.1
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           tag: "${{ steps.get-tag.outputs.TAG_NAME }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
