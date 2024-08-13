@@ -15,7 +15,7 @@ jobs:
           set-safe-directory: true
       - name: get-tag
         id: get-tag
-        uses: 'optimuspaul/release-on-push-action@main'
+        uses: './'
         with:
           bump_style: 'mono_prerelease'
       - name: debug
