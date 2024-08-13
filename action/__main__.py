@@ -63,7 +63,7 @@ def main(bump_style: ReleaseType):
         die_with_intent("auto release is not supported yet", 4)
     
     # a mono release is a release that is not semver, but is a single version that is incremented
-    if bump_style in ['mono_prerelease', 'mono']:
+    if bump_style in {ReleaseType.mono.name, ReleaseType.mono_prerelease.name}:
         current_version = None
         latest_version = 0
         last_rc = 0
@@ -105,7 +105,7 @@ def main(bump_style: ReleaseType):
         if bump_style == ReleaseType.mono_prerelease.value:
             tag = f"{tag}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
-    if bump_style in ['prerelease', 'build', 'major', 'minor', 'patch']:
+    if bump_style in {ReleaseType.prerelease.name, ReleaseType.build.name, ReleaseType.najor.name, ReleaseType.minor.name, ReleaseType.patch.name}:
         current_version = None
         if current_tags:
             for tag in current_tags.split("\n"):
@@ -116,8 +116,7 @@ def main(bump_style: ReleaseType):
             # look into the past to find the latest tag
             latest_version = "0.0.0"
             try:
-                tag_list = repo.git.tag(list=True)
-                tag_list = tag_list.split("\n")
+                tag_list = list_gh_tags()
                 for tag in sorted(tag_list, reverse=True):
                     if tag.startswith("v"):
                         latest_version = tag[1:]
@@ -137,12 +136,15 @@ def main(bump_style: ReleaseType):
             for tag in current_tags.split("\n"):
                 if tag.startswith("release-"):
                     die_with_intent("timestamp tag already set for this commit", 5)
-        tag = datetime.now().strftime("release-%Y-%m-%d_%H-%M-%S")
-        
+        tag = datetime.now().strftime("release-%Y-%m-%d_%H-%M-%S")        
     print(tag)
-    # repo.create_tag(tag)
-    # repo.remotes.origin.push(tag)
+    write_version_to_file(tag)
 
+
+def write_version_to_file(version: str):
+    fname = os.getenv("GITHUB_OUTPUT")
+    with open(fname "a") as f:
+        f.write(version)
 
 if __name__ == '__main__':
     main()
