@@ -11,6 +11,8 @@ from git import Repo
 from github import Github
 from github import Auth
 
+from action.mono import MonoVersionTag
+
 
 def list_gh_tags():
     tags = []
@@ -30,6 +32,19 @@ def list_gh_tags():
         print("no tags found")
     return tags
 
+def get_latest_tag():
+    tags = list_gh_tags()
+    if len(tags) == 0:
+        return MonoVersionTag("v0")
+    parsed_tags = []
+    for tag in tags:
+        parsed_tags.append(MonoVersionTag(tag))
+    sorted_tags = sorted(parsed_tags)
+    for tag in sorted_tags:
+        print(f"::>>  tag: {tag.tag} mono: {tag.mono} rc: {tag.release_candidate} is_rc: {tag.is_rc}")
+        print(f"      nxt: {tag.next_mono().tag}")
+        print(f"   nxtpre: {tag.next_rc().tag}")
+    return sorted_tags[-1]
 
 def die_with_intent(message: str, code: int):
     print(message)
@@ -79,41 +94,18 @@ def main(bump_style: ReleaseType):
                     current_version = Version.parse(tag[1:])
                     die_with_intent("version tag already set for this commit", 5)
         if not current_version:
+            tag = "v0-rc0"
             try:
-                tag_list = list_gh_tags()
-                vs = re.compile(r"v(\d+)")
-                vps = re.compile(r"v(\d+)-rc(\d+)")
+                last_tag = get_latest_tag()
                 if bump_style == ReleaseType.mono:
-                    tag_list = filter(lambda x: vs.match(x), tag_list)
-                    tag_list =  sorted(map(lambda x: int(x), tag_list), reverse=True)
-                    if len(tag_list) > 0:
-                        latest_version = tag_list[0]
-                else:
-                    versions = dict()
-                    for tag in tag_list:
-                        print(f"checking tag: {tag}")
-                        if vps.match(tag):
-                            vers, rc = vps.match(tag).groups()
-                            latest_version = max(latest_version, int(vers))
-                            if vers not in versions:
-                                versions[vers] = []
-                            versions[vers].append(int(rc))
-                            print(f"found version: {vers} rc: {rc}")
-                        elif vs.match(tag):
-                            vers = vs.match(tag).groups()[0]
-                            latest_version = max(latest_version, int(vers))
-                            if vers not in versions:
-                                versions[vers] = []
-                            print(f"found version: {latest_version} rc: -")
-                    rc_list =  sorted(map(lambda x: int(x), versions[vers]), reverse=True)
-                    print(rc_list)
-                    if len(rc_list) > 0:
-                        last_rc = rc_list[0]
-            except:
+                    tag = last_tag.next_mono().tag
+                if bump_style == ReleaseType.mono_prerelease:
+                    tag = last_tag.next_rc().tag
+            except Exception as e:
+                print("an error")
+                import traceback
+                traceback.print_exc()
                 pass
-        tag = f"v{latest_version+1}"
-        if bump_style == ReleaseType.mono_prerelease:
-            tag = f"v{latest_version}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
     if bump_style in {ReleaseType.prerelease, ReleaseType.build, ReleaseType.major, ReleaseType.minor, ReleaseType.patch}:
         current_version = None
