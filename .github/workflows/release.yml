@@ -1,4 +1,4 @@
-name: 'Release Candidate Action'
+name: 'Release Action'
 on:
   pull_request:
 jobs:
@@ -17,7 +17,7 @@ jobs:
         id: get-tag
         uses: './'
         with:
-          bump_style: 'mono_prerelease'
+          bump_style: 'mono'
       - name: debug
         run: echo "${{ steps.get-tag.outputs.TAG_NAME }}"
       - name: tag-commit
