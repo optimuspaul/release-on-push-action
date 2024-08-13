@@ -49,6 +49,7 @@ class ReleaseType(Enum):
 @click.command()
 @click.argument('bump_style')
 def main(bump_style: ReleaseType):
+    bump_style = ReleaseType[bump_style]
     repo = Repo('.')
     current_tags = ""
     try:
@@ -62,11 +63,11 @@ def main(bump_style: ReleaseType):
         die_with_intent(f"invalid release type {bump_style}, must be one of ['minor', 'major', 'patch', 'prerelease', 'timestamp', 'auto', 'mono', 'mono_prerelease']", 3)
     
     # auto is a future feature, should look at the latest commit message to determine the release type
-    if bump_style == ReleaseType.auto.value:
+    if bump_style == ReleaseType.auto:
         die_with_intent("auto release is not supported yet", 4)
     
     # a mono release is a release that is not semver, but is a single version that is incremented
-    if bump_style in {ReleaseType.mono.name, ReleaseType.mono_prerelease.name}:
+    if bump_style in {ReleaseType.mono, ReleaseType.mono_prerelease}:
         current_version = None
         latest_version = 0
         last_rc = 0
@@ -78,27 +79,30 @@ def main(bump_style: ReleaseType):
         if not current_version:
             try:
                 tag_list = list_gh_tags()
-                if bump_style == ReleaseType.mono.value:
-                    vs = re.compile(r"v(\d+)")
+                vs = re.compile(r"v(\d+)")
+                vps = re.compile(r"v(\d+)-rc(\d+)")
+                if bump_style == ReleaseType.mono:
                     tag_list = filter(lambda x: vs.match(x), tag_list)
                     tag_list =  sorted(map(lambda x: int(x), tag_list), reverse=True)
                     if len(tag_list) > 0:
                         latest_version = tag_list[0]
                 else:
-                    vs = re.compile(r"v(\d+)")
-                    vps = re.compile(r"v(\d+)-rc(\d+)")
                     versions = dict()
                     for tag in tag_list:
+                        print(f"checking tag: {tag}")
                         if vps.match(tag):
-                            vers, rc = vs.match(tag).groups()
+                            vers, rc = vps.match(tag).groups()
                             latest_version = max(latest_version, int(vers))
                             if vers not in versions:
-                                versions[vers] = [int(rc)]
+                                versions[vers] = []
+                            versions[vers].append(int(rc))
+                            print(f"found version: {vers} rc: {rc}")
                         elif vs.match(tag):
                             vers = vs.match(tag).groups()[0]
                             latest_version = max(latest_version, int(vers))
                             if vers not in versions:
                                 versions[vers] = []
+                            print(f"found version: {latest_version} rc: -")
                     rc_list =  sorted(map(lambda x: int(x), versions[vers]), reverse=True)
                     print(rc_list)
                     if len(rc_list) > 0:
@@ -106,10 +110,10 @@ def main(bump_style: ReleaseType):
             except:
                 pass
         tag = f"v{latest_version+1}"
-        if bump_style == ReleaseType.mono_prerelease.value:
+        if bump_style == ReleaseType.mono_prerelease:
             tag = f"v{latest_version}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
-    if bump_style in {ReleaseType.prerelease.name, ReleaseType.build.name, ReleaseType.major.name, ReleaseType.minor.name, ReleaseType.patch.name}:
+    if bump_style in {ReleaseType.prerelease, ReleaseType.build, ReleaseType.major, ReleaseType.minor, ReleaseType.patch}:
         current_version = None
         if current_tags:
             for tag in current_tags.split("\n"):
@@ -129,13 +133,13 @@ def main(bump_style: ReleaseType):
                 pass
             current_version = Version.parse(latest_version)
         new_version: Version = None
-        if bump_style == ReleaseType.build.value:
+        if bump_style == ReleaseType.build:
             new_version = current_version.bump_build()
         else:
             new_version = current_version.next_version(bump_style)
         tag = f"v{new_version}"
     # timestamp releases
-    elif bump_style == ReleaseType.timestamp.value:
+    elif bump_style == ReleaseType.timestamp:
         if current_tags:
             for tag in current_tags.split("\n"):
                 if tag.startswith("release-"):
