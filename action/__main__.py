@@ -99,14 +99,15 @@ def main(bump_style: ReleaseType):
                             latest_version = max(latest_version, int(vers))
                             if vers not in versions:
                                 versions[vers] = [int(rc)]
-                    tag_list =  sorted(map(lambda x: int(x), versions[vers]), reverse=True)
-                    if len(tag_list) > 0:
-                        last_rc = tag_list[0]
+                    rc_list =  sorted(map(lambda x: int(x), versions[vers]), reverse=True)
+                    print(rc_list)
+                    if len(rc_list) > 0:
+                        last_rc = rc_list[0]
             except:
                 pass
         tag = f"v{latest_version+1}"
         if bump_style == ReleaseType.mono_prerelease.value:
-            tag = f"{tag}-rc{last_rc+1}"
+            tag = f"v{latest_version}-rc{last_rc+1}"
     # for release types that are semver, we can bump the version
     if bump_style in {ReleaseType.prerelease.name, ReleaseType.build.name, ReleaseType.major.name, ReleaseType.minor.name, ReleaseType.patch.name}:
         current_version = None
