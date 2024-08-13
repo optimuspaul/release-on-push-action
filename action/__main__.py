@@ -59,7 +59,7 @@ def main(bump_style: ReleaseType):
     if repo.bare:
         die_with_intent("this script must be run in a git repository", 2)
     # make sure the release is valid
-    if bump_style not in dir(ReleaseType):
+    if bump_style not in ReleaseType:
         die_with_intent(f"invalid release type {bump_style}, must be one of ['minor', 'major', 'patch', 'prerelease', 'timestamp', 'auto', 'mono', 'mono_prerelease']", 3)
     
     # auto is a future feature, should look at the latest commit message to determine the release type
