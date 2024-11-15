@@ -13,9 +13,7 @@ from github import Auth
 
 from action.mono import MonoVersionTag
 
-
-def list_gh_tags():
-    tags = []
+def get_gh():
     token = os.getenv("GITHUB_TOKEN")
     print(f"token: {token is not None}")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -24,6 +22,12 @@ def list_gh_tags():
         die_with_intent("GITHUB_TOKEN and GITHUB_REPOSITORY must be set", 1)
     auth = Auth.Token(token)
     g = Github(auth=auth)
+    return g, repo
+
+def list_gh_tags():
+    print("listing tags")
+    tags = []
+    g, repo = get_gh()
     for tag in g.get_repo(repo).get_tags():
         tags.append(tag.name)
         print(f"tag found: {tag.name}")
@@ -66,8 +70,17 @@ class ReleaseType(Enum):
 @click.command()
 @click.argument('bump_style')
 def main(bump_style: ReleaseType):
+    tag = main_release(bump_style)
+    print(tag)
+    write_version_to_file(tag)
+
+
+def get_repo():
+    return Repo('.')
+
+def main_release(bump_style: ReleaseType):
     bump_style = ReleaseType[bump_style]
-    repo = Repo('.')
+    repo = get_repo()
     current_tags = ""
     try:
         current_tags = repo.git.tag(points_at="head")
@@ -91,12 +104,13 @@ def main(bump_style: ReleaseType):
         if current_tags:
             for tag in current_tags.split("\n"):
                 if tag.startswith("v"):
-                    current_version = Version.parse(tag[1:])
+                    current_version = MonoVersionTag(tag)
                     die_with_intent("version tag already set for this commit", 5)
         if not current_version:
             tag = "v0-rc0"
             try:
                 last_tag = get_latest_tag()
+                print(last_tag.tag)
                 if bump_style == ReleaseType.mono:
                     tag = last_tag.next_mono().tag
                 if bump_style == ReleaseType.mono_prerelease:
@@ -116,18 +130,21 @@ def main(bump_style: ReleaseType):
                     die_with_intent("version tag already set for this commit", 5)
         if not current_version:
             # look into the past to find the latest tag
-            latest_version = "0.0.0"
+            current_version = Version.parse("0.0.0")
             try:
                 tag_list = list_gh_tags()
-                for tag in sorted(tag_list, reverse=True):
+                ver_tags = []
+                for tag in tag_list:
                     if tag.startswith("v"):
-                        latest_version = tag[1:]
-                        break
+                        ver_tags.append(Version.parse(tag[1:]))
+                for tag in sorted(ver_tags, reverse=True):
+                    current_version = tag
+                    print(tag)
+                    break
             except Exception as e:
                 print("an error")
                 print(e)
                 pass
-            current_version = Version.parse(latest_version)
         new_version: Version = None
         if bump_style == ReleaseType.build:
             new_version = current_version.bump_build()
@@ -140,9 +157,9 @@ def main(bump_style: ReleaseType):
             for tag in current_tags.split("\n"):
                 if tag.startswith("release-"):
                     die_with_intent("timestamp tag already set for this commit", 5)
-        tag = datetime.now().strftime("release-%Y-%m-%d_%H-%M-%S")        
-    print(tag)
-    write_version_to_file(tag)
+        tag = datetime.now().strftime("release-%Y-%m-%d_%H-%M-%S")
+    print(f"tag: {tag}")
+    return tag
 
 
 def write_version_to_file(version: str):
